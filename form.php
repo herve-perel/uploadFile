@@ -1,59 +1,40 @@
 <?php
 
-// Je vérifie si le formulaire est soumis comme d'habitude
 
-if($_SERVER['REQUEST_METHOD'] === "POST"){ 
-
-    // Securité en php
-
-    // chemin vers un dossier sur le serveur qui va recevoir les fichiers uploadés (attention ce dossier doit être accessible en écriture)
+if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
     $uploadDir = 'public/uploads/';
 
-    // le nom de fichier sur le serveur est ici généré à partir du nom de fichier sur le poste du client (mais d'autre stratégies de nommage sont possibles)
-
     $uploadFile = $uploadDir . basename($_FILES['avatar']['name']);
-
-    // Je récupère l'extension du fichier
 
     $extension = pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION);
 
-    // Les extensions autorisées
-
-    $authorizedExtensions = ['jpg','png', 'gif', 'webp'];
-
-    // Le poids max géré par PHP par défaut est de 2M
+    $authorizedExtensions = ['jpg', 'png', 'gif', 'webp'];
 
     $maxFileSize = 1000000;
 
-    
-    
-    // Je sécurise et effectue mes tests
 
+    $errors = [];
 
-    /****** Si l'extension est autorisée *************/
-
-    if( (!in_array($extension, $authorizedExtensions))){
-
+    if ((!in_array($extension, $authorizedExtensions))) {
         $errors[] = 'Veuillez sélectionner une image de type Jpg ou Jpeg ou Png !';
-
     }
 
 
-    /****** On vérifie si l'image existe et si le poids est autorisé en octets *************/
-
-    if( file_exists($_FILES['avatar']['tmp_name']) && filesize($_FILES['avatar']['tmp_name']) > $maxFileSize)
-
-    {
-
-    $errors[] = "Votre fichier doit faire moins de 1M !";
-
+    if (file_exists($_FILES['avatar']['tmp_name']) && filesize($_FILES['avatar']['tmp_name']) > $maxFileSize) {
+        $errors[] = "Votre fichier doit faire moins de 1M !";
     }
+
+    if (empty($errors)) {
+        $unique_id = uniqid();
+        $new_file_name =  $unique_id . '.' . $extension;
+        $uploadFile = $uploadDir . $new_file_name;
+        move_uploaded_file($_FILES['avatar']['tmp_name'], $uploadFile);
+      }
 }
 
 
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -67,8 +48,18 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
 
 <body>
     <div class="card">
-        <?= $uploadFile ?>
-        <div class="text">
+    <ul>
+    <?php if(!empty($errors)) 
+         foreach ($errors as $error) : ?>
+            <li> <?= $error ?> </li>
+        <?php endforeach ?>
+       
+    </ul>
+    <div class="card">
+        <?php if (empty($errors)) : ?>
+            <img src="<?= $uploadFile ?>" />
+        <?php endif; ?>
+        <ul>
             <p>firstname: Homer</p>
             <p>lastname: Simpson</p>
             <p>age: 67</p>
