@@ -1,0 +1,12 @@
+.card {
+    display: flex;
+}
+
+.card img {
+    width: 200px;
+}
+
+.text {
+    justify-content: flex-end;
+    align-self: center;
+}
